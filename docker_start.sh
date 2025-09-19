@@ -9,4 +9,4 @@ docker run --rm -it --gpus all \
   --device /dev/dri \
   --shm-size=8g \
   --name hanelso-alexnet \
-  alexnet-pytorch:2.3.0-cu118
+  u2204_c118_p23
