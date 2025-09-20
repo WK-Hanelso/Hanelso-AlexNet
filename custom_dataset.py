@@ -17,11 +17,13 @@ class HanelsoAlexnetDataset( Dataset ):
         self.labels = list()
         self.class_mapping = dict()
 
-        class_index_path = os.path.join( data_path, "iamgenet_class_index.json" )
+        class_index_path = os.path.join( data_path, "class_index.json" )
 
         with open( class_index_path, 'r' ) as f:
             class_id_to_name = json.load( f )
-        class_id_to_name = { name[0] : [cls_id, name[1]] for cls_id, name in class_id_to_name.items() }
+        # class_id_to_name = { name[0] : [cls_id, name[1]] for cls_id, name in class_id_to_name.items() }
+        class_id_to_name = { name : [cls_id, name] for cls_id, name in class_id_to_name.items() }
+        print( class_id_to_name)
 
         image_dir = os.path.join( data_path, "images" )
         for class_name in sorted( os.listdir( image_dir ) ):
