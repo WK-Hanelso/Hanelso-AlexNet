@@ -6,13 +6,14 @@ from torchvision import transforms
 epochs = 100
 batch_size = 64
 learning_rate = 0.001
-train_data_dir = "imagenet-mini/ImageNet_Mini"
-test_data_dir = "imagenet-mini/ImageNet_Mini"
+train_data_dir = "DATA/PokemonData"
+test_data_dir = "DATA/PokemonData"
+save_dir = "results"
 val_split_percent = 0.2
 
 shuffle = True  # DataLoader.shuffle
 num_workers = 4 # DataLoader.num_workers
-n_classes = 150
+n_classes = 149
 loss_label_smoothing = 0.1
 
 transform = transforms.Compose([

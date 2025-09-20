@@ -1,3 +1,4 @@
+import os
 import argparse
 import torch
 import torch.nn as nn
@@ -7,9 +8,11 @@ from torch.utils.data import DataLoader, random_split
 from tqdm.auto import tqdm
 from datetime import datetime
 
-import train_config as config
+import config_train as config
 from model import HanelsoAlexNetModel
 from custom_dataset import HanelsoAlexnetDataset
+
+log_file_name = "log.txt"
 
 def create_dataloaders( batch_size: int, val_split: float ) -> tuple[ DataLoader, DataLoader ]:
     data_dir = config.train_data_dir
@@ -69,7 +72,12 @@ def run_epoch(
     
     average_loss = running_loss / len( train_loader )
     average_val_loss = validate( model = model, val_loader = val_loader, criterion = criterion )
-    print( f"Training loss: {average_loss} | Validation loss: {average_val_loss}" )
+
+    loss_str = f"epoch: {epoch} || Training loss: {average_loss} | Validation loss: {average_val_loss}\n"
+
+    print( loss_str )
+    return loss_str
+
     
 
 def run():
@@ -79,6 +87,7 @@ def run():
     parser.add_argument( "--batch_size", type = int, default = config.batch_size )
     parser.add_argument( "--lr", type = int, default = config.learning_rate )
     parser.add_argument( "--val_split", type = float, default = config.val_split_percent )
+    parser.add_argument( "--save_dir", type = str, default = config.save_dir )
     args = parser.parse_args()
 
     epochs = args.epochs
@@ -89,6 +98,7 @@ def run():
     n_classes = config.n_classes
     device = config.device
     loss_label_smoothing = config.loss_label_smoothing
+    save_dir = config.save_dir
 
     model = HanelsoAlexNetModel( n_classes= n_classes ).to( device )
     train_loader, val_loader = create_dataloaders( batch_size = batch_size, val_split = val_split_percent )
@@ -96,8 +106,12 @@ def run():
     criterion = nn.CrossEntropyLoss( label_smoothing= loss_label_smoothing ).to( device )
     current_datetime_str = datetime.now().strftime( "%Y%m%d_%H%M%S" )
     
+    if os.path.exists( save_dir ) == False:
+        os.mkdir( save_dir )
+        
     for epoch in range( epochs ):
-        run_epoch( 
+        
+        log_str = run_epoch( 
             model = model,
             train_loader = train_loader,
             val_loader = val_loader,
@@ -105,8 +119,12 @@ def run():
             optimizer = optimizer,
             criterion = criterion
         )
-
-        torch.save( model.state_dict(), f"model_{ current_datetime_str }_epoch{ epoch + 1 }.pt" )
+        
+        save_path = os.path.join( save_dir, f"model_{ current_datetime_str }_epoch{ epoch + 1 }.pt" )
+        log_path = os.path.join( save_dir, log_file_name )
+        torch.save( model.state_dict(), save_path )
+        with open( log_path, 'a' ) as f:
+            f.write( log_str )
     
 
 if __name__ == "__main__":
