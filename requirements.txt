@@ -9,3 +9,5 @@ torchdata==0.7.1
 
 Pillow==9.3.0
 tqdm==4.66.1
+
+nvidia-cuda-nvrtc-cu11==11.8.*

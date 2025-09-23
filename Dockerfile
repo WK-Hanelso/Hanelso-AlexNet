@@ -28,6 +28,8 @@ COPY requirements.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
     python3 -m pip install --no-cache-dir -r requirements.txt
 
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/nvidia/cuda_nvrtc/lib:$LD_LIBRARY_PATH
+
 # 디폴트 커맨드
 CMD ["/bin/bash"]
 
