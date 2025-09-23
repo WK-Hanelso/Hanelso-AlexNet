@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import config_train as config
 
 class HanelsoAlexNetModel( nn.Module ):
 
@@ -44,12 +45,12 @@ class HanelsoAlexNetModel( nn.Module ):
         self.n_neurons = 4096
         self.classifier = nn.Sequential(
             # 1st. fully connected layer
-            nn.Dropout( 0.5 ),
+            nn.Dropout( config.drop_out_ratio ),
             nn.Linear( 256*6*6, self.n_neurons ),
             nn.ReLU(True),
             
             # 2nd. fully connected layer
-            nn.Dropout( 0.5 ),
+            nn.Dropout( config.drop_out_ratio ),
             nn.Linear( self.n_neurons, self.n_neurons ),
             nn.ReLU( True ),
             

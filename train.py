@@ -15,17 +15,29 @@ from custom_dataset import HanelsoAlexnetDataset
 log_file_name = "log.txt"
 
 def create_dataloaders( batch_size: int, val_split: float ) -> tuple[ DataLoader, DataLoader ]:
-    data_dir = config.train_data_dir
-    transform = config.transform
+    train_data_dir = config.train_data_dir
+    val_data_dir = config.val_data_dir
     shuffle = config.shuffle
+    num_workers = config.num_workers
 
-    dataset = HanelsoAlexnetDataset( data_path = data_dir, transform = transform )
-    val_split_cnt = int( len(dataset) * val_split )
-    train_split_cnt = len( dataset ) - val_split_cnt
-    train_set, val_set = random_split( dataset, [ train_split_cnt, val_split_cnt ] )
+    dataset_train = HanelsoAlexnetDataset( data_path = train_data_dir, transform = config.transform_train, filelist="train.txt" )
+    dataset_val = HanelsoAlexnetDataset( data_path = val_data_dir, transform = config.transform_eval, filelist="val.txt" )
 
-    train_loader = DataLoader( train_set, batch_size = batch_size, shuffle = shuffle )
-    val_loader = DataLoader( val_set, batch_size = batch_size, shuffle = shuffle )
+    train_loader = DataLoader( 
+                        dataset_train, 
+                        batch_size = batch_size, 
+                        shuffle = shuffle,
+                        num_workers = num_workers,
+                        pin_memory = torch.cuda.is_available(),
+                    )
+
+    val_loader = DataLoader( 
+                        dataset_val, 
+                        batch_size = batch_size, 
+                        shuffle = False,
+                        num_workers = num_workers,
+                        pin_memory = torch.cuda.is_available(),
+                    )
 
     return train_loader, val_loader
 
@@ -61,9 +73,20 @@ def run_epoch(
     running_loss = 0
     
     with tqdm( train_loader, desc = f"Epoch { epoch + 1 }", unit = "batch" ) as tbar:
-        for batch in tbar:
+        for idx, batch in enumerate(tbar):
             images, labels = batch
+
+            # 처음 3배치만 통계 출력
+            if idx < 3:
+                print("img mean/std:", images.mean().item(), images.std().item())
+
             out = model( images.to( config.device ))
+
+            if idx < 3:
+                print("logits mean/std:",
+                    out.detach().mean().item(),
+                    out.detach().std().item())
+
             loss = criterion( out, labels.to( config.device ) )
             optimizer.zero_grad()
             loss.backward()
@@ -73,7 +96,7 @@ def run_epoch(
     average_loss = running_loss / len( train_loader )
     average_val_loss = validate( model = model, val_loader = val_loader, criterion = criterion )
 
-    loss_str = f"epoch: {epoch} || Training loss: {average_loss} | Validation loss: {average_val_loss}\n"
+    loss_str = f"epoch: {epoch+1} || Training loss: {average_loss} | Validation loss: {average_val_loss}\n"
 
     print( loss_str )
     return loss_str
@@ -85,7 +108,7 @@ def run():
     parser = argparse.ArgumentParser( description = "Hanelso AlexNet Model Train" )
     parser.add_argument( "--epochs", type = int, default = config.epochs )
     parser.add_argument( "--batch_size", type = int, default = config.batch_size )
-    parser.add_argument( "--lr", type = int, default = config.learning_rate )
+    parser.add_argument( "--lr", type = float, default = config.learning_rate )
     parser.add_argument( "--val_split", type = float, default = config.val_split_percent )
     parser.add_argument( "--save_dir", type = str, default = config.save_dir )
     args = parser.parse_args()
@@ -105,7 +128,7 @@ def run():
     optimizer = optim.Adam( model.parameters(), lr = learning_rate )
     criterion = nn.CrossEntropyLoss( label_smoothing= loss_label_smoothing ).to( device )
     current_datetime_str = datetime.now().strftime( "%Y%m%d_%H%M%S" )
-    
+
     if os.path.exists( save_dir ) == False:
         os.mkdir( save_dir )
         
@@ -122,7 +145,10 @@ def run():
         
         save_path = os.path.join( save_dir, f"model_{ current_datetime_str }_epoch{ epoch + 1 }.pt" )
         log_path = os.path.join( save_dir, log_file_name )
-        torch.save( model.state_dict(), save_path )
+
+        if epoch % 10 == 0:
+            torch.save( model.state_dict(), save_path )
+
         with open( log_path, 'a' ) as f:
             f.write( log_str )
     
