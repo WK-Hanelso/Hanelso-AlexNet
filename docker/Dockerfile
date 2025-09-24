@@ -24,7 +24,7 @@ RUN rm -rf /var/lib/apt/lists/*
 # 작업 디렉토리
 WORKDIR /workspace
 
-COPY requirements.txt .
+COPY docker/requirements.txt .
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
     python3 -m pip install --no-cache-dir -r requirements.txt
 
