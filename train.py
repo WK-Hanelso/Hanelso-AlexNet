@@ -77,15 +77,15 @@ def run_epoch(
             images, labels = batch
 
             # 처음 3배치만 통계 출력
-            if idx < 3:
-                print("img mean/std:", images.mean().item(), images.std().item())
+            # if idx < 3:
+            #     print("img mean/std:", images.mean().item(), images.std().item())
 
             out = model( images.to( config.device ))
 
-            if idx < 3:
-                print("logits mean/std:",
-                    out.detach().mean().item(),
-                    out.detach().std().item())
+            # if idx < 3:
+            #     print("logits mean/std:",
+            #         out.detach().mean().item(),
+            #         out.detach().std().item())
 
             loss = criterion( out, labels.to( config.device ) )
             optimizer.zero_grad()
@@ -96,7 +96,7 @@ def run_epoch(
     average_loss = running_loss / len( train_loader )
     average_val_loss = validate( model = model, val_loader = val_loader, criterion = criterion )
 
-    loss_str = f"epoch: {epoch+1} || Training loss: {average_loss} | Validation loss: {average_val_loss}\n"
+    loss_str = f"epoch: {epoch+1}\t|| Training loss: {average_loss}\t| Validation loss: {average_val_loss}\n"
 
     print( loss_str )
     return loss_str

@@ -1,12 +1,13 @@
+import os
 import torch
 from torchvision import transforms
 from torchvision.transforms import InterpolationMode
 
 # Training Configs ====================================================
 
-epochs = 100
+epochs = 60
 batch_size = 64
-learning_rate = 1e-3
+learning_rate = 5e-4
 train_data_dir = "DATA/PokemonData"
 val_data_dir = "DATA/PokemonData"
 test_data_dir = "DATA/PokemonData"
@@ -14,10 +15,9 @@ save_dir = "results"
 val_split_percent = 0.2
 
 shuffle = True  # DataLoader.shuffle
-num_workers = 8 # DataLoader.num_workers
+num_workers = min( 12, os.cpu_count()) # DataLoader.num_workers
 n_classes = 149
-# loss_label_smoothing = 0.1
-loss_label_smoothing = 0.0
+loss_label_smoothing = 0.1
 drop_out_ratio = 0.0
 
 # ImageNet 통계(그대로 유지)
