@@ -1,0 +1,22 @@
+--index-url https://download.pytorch.org/whl/cu118
+--extra-index-url https://pypi.org/simple
+
+# aarch64
+torch==2.0.1; platform_machine=="aarch64"
+torchvision==0.15.2; platform_machine=="aarch64"
+torchaudio==2.0.2; platform_machine=="aarch64"
+torchtext==0.15.2; platform_machine=="aarch64"
+
+# x86_64
+torch==2.3.0; platform_machine=="x86_64"
+torchvision==0.18.0; platform_machine=="x86_64"
+torchaudio==2.3.0; platform_machine=="x86_64"
+torchtext==0.18.0; platform_machine=="x86_64"
+
+
+torchdata==0.7.1
+
+Pillow==9.3.0
+tqdm==4.66.1
+
+nvidia-cuda-nvrtc-cu11==11.8.*
