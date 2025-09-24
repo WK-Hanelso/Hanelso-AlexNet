@@ -12,7 +12,7 @@ import config_train as config
 from model import HanelsoAlexNetModel
 from custom_dataset import HanelsoAlexnetDataset
 
-log_file_name = "log.txt"
+log_file_prefix = "log_"
 
 def create_dataloaders( batch_size: int, val_split: float ) -> tuple[ DataLoader, DataLoader ]:
     train_data_dir = config.train_data_dir
@@ -131,7 +131,15 @@ def run():
 
     if os.path.exists( save_dir ) == False:
         os.mkdir( save_dir )
-        
+
+    
+    config_setting = make_config_setting()
+    log_path = os.path.join( save_dir, log_file_prefix + config_setting )
+
+    if os.path.exists( os.path.join(save_dir, "model" + config_setting)):
+        os.mkdir( os.path.join(save_dir, "model" + config_setting))
+
+
     for epoch in range( epochs ):
         
         log_str = run_epoch( 
@@ -143,14 +151,28 @@ def run():
             criterion = criterion
         )
         
-        save_path = os.path.join( save_dir, f"model_{ current_datetime_str }_epoch{ epoch + 1 }.pt" )
-        log_path = os.path.join( save_dir, log_file_name )
+        save_path = os.path.join( save_dir, f"model{ config_setting }_epoch{ epoch + 1 }.pt" )
 
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             torch.save( model.state_dict(), save_path )
 
         with open( log_path, 'a' ) as f:
             f.write( log_str )
+
+def make_config_setting():
+    sm = config.loss_label_smoothing
+    do = config.drop_out_ratio
+    b = config.batch_size
+    lr = config.learning_rate
+
+    sm = '0' + str( 10 * sm )
+    do = '0' + str( 10 * do )
+    b = b
+    lr = f"{lr:.0e}".replace("e-", "e")
+
+    tmp = f"_sm{sm}_do{do}_b{b}_lr{lr}.txt"
+
+    return tmp
     
 
 if __name__ == "__main__":
